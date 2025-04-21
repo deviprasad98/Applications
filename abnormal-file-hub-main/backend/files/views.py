@@ -8,9 +8,8 @@ from rest_framework.permissions import AllowAny
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum
-import logging
 
-logger = logging.getLogger(__name__)
+
 
 class FileViewSet(viewsets.ModelViewSet):
     queryset = File.objects.all()
@@ -29,7 +28,6 @@ class FileViewSet(viewsets.ModelViewSet):
             for chunk in file_obj.chunks():
                 sha256_hash.update(chunk)
         except Exception as e:
-            logger.error(f"Error reading file for hashing: {e}")
             return Response({'error': 'Error processing file for hashing'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         file_hash = sha256_hash.hexdigest()

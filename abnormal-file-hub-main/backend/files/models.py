@@ -32,27 +32,3 @@ class File(models.Model):
         This assumes that the file is only stored once and subsequent references do not consume additional storage.
         """
         return (self.reference_count - 1) * self.size
-
-    @classmethod
-    def calculate_storage_savings(cls):
-        """
-        Calculate the overall storage savings across all files in the database.
-        """
-        unique_files = cls.objects.filter(reference_count__gte=1)
-
-        total_requested_size = unique_files.aggregate(total_size=Sum('size'))['total_size'] or 0
-        unique_storage_used = unique_files.aggregate(unique_size=Sum('size', filter=models.Q(reference_count=1)))['unique_size'] or 0
-
-        # Calculate storage saved
-        storage_saved = total_requested_size - unique_storage_used
-
-        return {
-            'total_requested_upload_size_mb': cls.bytes_to_mb(total_requested_size),
-            'unique_storage_used_mb': cls.bytes_to_mb(unique_storage_used),
-            'storage_saved_mb': cls.bytes_to_mb(storage_saved)
-        }
-
-    @staticmethod
-    def bytes_to_mb(size_in_bytes):
-        """Convert bytes to megabytes."""
-        return round(size_in_bytes / (1024 * 1024), 2)
